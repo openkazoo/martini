@@ -1,0 +1,3 @@
+[submodule "c_src/secsipidx"]
+	path = c_src/secsipidx
+	url = https://github.com/asipto/secsipidx

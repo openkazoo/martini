@@ -1,0 +1,18 @@
+{application, martini, [
+    {applications, [
+        kazoo,
+        kazoo_apps,
+        kazoo_data,
+        kazoo_documents,
+        kazoo_stdlib,
+        kernel,
+        lager,
+        stdlib
+    ]},
+    {description, "SITR(red) or SHAKEN?"},
+    {env, [{is_kazoo_app, true}]},
+    {mod, {martini_app, []}},
+    {modules, []},
+    {registered, []},
+    {vsn, "4.4.0a1"}
+]}.
