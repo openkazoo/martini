@@ -13,7 +13,7 @@
 
 -on_load(load_nif/0).
 
--define(NIF_LOAD_INFO, 100).
+-define(NIF_LOAD_INFO, 101).
 
 -define(nif_stub, nif_stub_error(?LINE)).
 
@@ -48,10 +48,8 @@ normalize_tn(TN) ->
 
 %%------------------------------------------------------------------------------
 %% @doc Determine if an identity header should be added
-%% @param JObj - the JSON object to add the identity header to
-%% @param Data - the data to add the identity header to
-%% @param Call - the call to add the identity header to
-%% @return the JSON object with the identity header added
+%% @param JObj - the offnet JSON object to add the identity header to
+%% @return the offnet JSON object with the identity header added
 %% @end
 %%------------------------------------------------------------------------------
 -spec maybe_add_identity_header(kz_json:object()) ->
@@ -72,25 +70,26 @@ maybe_add_identity_header(JObj) ->
 
             %% Attempt to generate an identity header
             case get_identity(OrigTN, DestTN, <<"A">>, OrigID) of
-                {'error', Error} ->
-                    lager:error("Failed to generate identity header: ~p", [Error]),
+                {'error', Code} ->
+                    Reason = martini_error:get_reason(Code),
+                    lager:error("Failed to generate identity header: (~p) ~p", [Code, Reason]),
                     JObj;
                 {'ok', IdentityHeader} ->
-                    lager:debug("~p", [IdentityHeader]),
+                    lager:debug("Identity: ~p", [IdentityHeader]),
 
                     %% Create a nested structure
-                    UpdateObj = kz_json:from_list([
+                    NewObj = kz_json:from_list([
                         {<<"Custom-SIP-Headers">>,
                             kz_json:from_list([
                                 {<<"Identity">>, IdentityHeader}
                             ])}
                     ]),
 
-                    %% Use merge_recursive to merge the update into the original object
+                    %% Use merge_recursive to merge the header into the original object
                     %% This will create Custom-SIP-Headers if it doesn't exist or merge
-                    %% with the existing headers, overwriting any existing Identity header
+                    %% with the existing headers, overwriting an existing Identity header
                     %% but preserving others
-                    kz_json:merge_recursive(JObj, UpdateObj)
+                    kz_json:merge_recursive(JObj, NewObj)
             end
     end.
 
@@ -166,5 +165,7 @@ load_nif() ->
             Path ->
                 Path
         end,
-    lager:debug("Loading NIF for ~p from ~p", [?MODULE, filename:join(PrivDir, ?MODULE)]),
+    lager:debug("Loading NIF for ~p ~p from ~p", [
+        ?MODULE, ?APP_VERSION, filename:join(PrivDir, ?MODULE)
+    ]),
     erlang:load_nif(filename:join(PrivDir, ?MODULE), ?NIF_LOAD_INFO).

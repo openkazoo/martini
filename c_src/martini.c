@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NIF_LOAD_INFO (100)
+#define NIF_LOAD_INFO (101)
 
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
@@ -167,8 +167,8 @@ static int load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM load_info)
 {
     atom_ok = enif_make_atom(env, "ok");
     atom_error = enif_make_atom(env, "error");
-    atom_null_output = enif_make_atom(env, "null_output");
-    atom_malloc_fail = enif_make_atom(env, "malloc_fail");
+    atom_null_output = enif_make_atom(env, "martini_null_output");
+    atom_malloc_fail = enif_make_atom(env, "martini_malloc_fail");
 
     return 0;
 }

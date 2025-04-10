@@ -10,7 +10,7 @@
 -ifndef(MARTINI_HRL).
 
 -define(APP_NAME, <<"martini">>).
--define(APP_VERSION, <<"1.0.0">>).
+-define(APP_VERSION, <<"1.0.1">>).
 -define(CONFIG_CAT, <<"martini">>).
 
 -define(ENABLED,
@@ -23,7 +23,9 @@
 ).
 -define(PRIVATE_KEY_PEM,
     kapps_config:get_binary(
-        ?CONFIG_CAT, <<"private_key_pem">>, <<"-----BEGIN EC PRIVATE KEY-----\n{YOUR_PRIVATE_KEY}\n-----END EC PRIVATE KEY-----">>
+        ?CONFIG_CAT,
+        <<"private_key_pem">>,
+        <<"-----BEGIN EC PRIVATE KEY-----\n{YOUR_PRIVATE_KEY}\n-----END EC PRIVATE KEY-----">>
     )
 ).
 
