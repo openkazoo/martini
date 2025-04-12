@@ -13,6 +13,7 @@ all: martini
 
 libsecsipid:
 	@echo "Building libsecsipid"
+	@git submodule update --init --recursive
 	@cd secsipidx/csecsipid && \
 		go build -ldflags="-extldflags=-Wl" -o ../../../priv/libsecsipid.a -buildmode=c-archive csecsipid.go
 
