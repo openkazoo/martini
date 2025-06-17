@@ -29,7 +29,6 @@ This is an experimental implementation of STIR/SHAKEN in Kazoo using [SecSIPIdX]
 
 ```sh
 git clone https://github.com/openkazoo/martini
-git submodule update --init
 ```
 
 ### Patch Stepswitch

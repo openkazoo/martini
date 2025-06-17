@@ -7,6 +7,7 @@ COMPILE_MOAR = make-c_src
 CLEAN_MOAR = clean-c_src
 
 make-c_src:
+	@git submodule update --init --recursive
 	@$(MAKE) -C c_src
 
 clean-c_src:
