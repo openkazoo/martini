@@ -10,7 +10,7 @@
 -ifndef(MARTINI_HRL).
 
 -define(APP_NAME, <<"martini">>).
--define(APP_VERSION, <<"1.0.1">>).
+-define(APP_VERSION, <<"1.0.2">>).
 -define(CONFIG_CAT, <<"martini">>).
 
 -define(ENABLED,
