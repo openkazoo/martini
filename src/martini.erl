@@ -56,8 +56,6 @@ normalize_tn(TN) ->
     kz_json:object().
 maybe_add_identity_header(JObj) ->
     case ?ENABLED of
-        'false' ->
-            JObj;
         'true' ->
             %% Get origination number
             OrigTN = kz_json:get_value(<<"Outbound-Caller-ID-Number">>, JObj, <<>>),
@@ -90,7 +88,9 @@ maybe_add_identity_header(JObj) ->
                     %% with the existing headers, overwriting an existing Identity header
                     %% but preserving others
                     kz_json:merge_recursive(JObj, NewObj)
-            end
+            end;
+        _ ->
+            JObj
     end.
 
 %%------------------------------------------------------------------------------
