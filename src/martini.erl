@@ -61,7 +61,7 @@ maybe_add_identity_header(JObj) ->
             OrigTN = kz_json:get_value(<<"Outbound-Caller-ID-Number">>, JObj, <<>>),
 
             %% Get destination number
-            DestTN = kz_json:get_value(<<"To-DID">>, JObj, <<>>),
+            DestTN = stepswitch_util:get_outbound_destination(JObj),
 
             %% Get call ID
             OrigID = kz_json:get_value(<<"Call-ID">>, JObj, <<>>),
