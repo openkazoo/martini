@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NIF_LOAD_INFO (101)
+#define NIF_LOAD_INFO (102)
 
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
@@ -63,12 +63,11 @@ static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TER
  */
 static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-    char *origTN = NULL, *destTN = NULL, *attestVal = NULL, *origID = NULL, *x5uVal = NULL, *prvkeyData = NULL,
-         *outPtr = NULL;
+    char *origTN = NULL, *destTN = NULL, *attestVal = NULL, *x5uVal = NULL, *prvkeyData = NULL, *outPtr = NULL;
     ERL_NIF_TERM result = atom_ok;
 
     // Check arguments
-    if (argc != 6) {
+    if (argc != 5) {
         return enif_make_badarg(env);
     }
 
@@ -76,9 +75,8 @@ static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TER
     if (!validate_and_convert_binary(env, argv[0], &origTN, &result) ||
         !validate_and_convert_binary(env, argv[1], &destTN, &result) ||
         !validate_and_convert_binary(env, argv[2], &attestVal, &result) ||
-        !validate_and_convert_binary(env, argv[3], &origID, &result) ||
-        !validate_and_convert_binary(env, argv[4], &x5uVal, &result) ||
-        !validate_and_convert_binary(env, argv[5], &prvkeyData, &result)) {
+        !validate_and_convert_binary(env, argv[3], &x5uVal, &result) ||
+        !validate_and_convert_binary(env, argv[4], &prvkeyData, &result)) {
         // Check if there was an error
         if (!enif_is_identical(result, atom_ok)) {
             // If there was an error, return the error atom and the error code
@@ -89,7 +87,7 @@ static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TER
     }
 
     // Call the C function
-    int ret = SecSIPIDGetIdentityPrvKey(origTN, destTN, attestVal, origID, x5uVal, prvkeyData, &outPtr);
+    int ret = SecSIPIDGetIdentityPrvKey(origTN, destTN, attestVal, "", x5uVal, prvkeyData, &outPtr);
 
     // Handle the result
     if (ret < 0) {
@@ -128,9 +126,6 @@ cleanup:
     }
     if (attestVal) {
         free(attestVal);
-    }
-    if (origID) {
-        free(origID);
     }
     if (x5uVal) {
         free(x5uVal);
@@ -218,7 +213,7 @@ static void unload(ErlNifEnv *env, void *priv_data)
 
 // NIF function registration
 static ErlNifFunc nif_funcs[] = {
-    {"get_identity_nif", 6, get_identity_nif, 0}
+    {"get_identity_nif", 5, get_identity_nif, 0}
 };
 
 // NIF initialization function

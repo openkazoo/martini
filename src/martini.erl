@@ -13,7 +13,7 @@
 
 -on_load(load_nif/0).
 
--define(NIF_LOAD_INFO, 101).
+-define(NIF_LOAD_INFO, 102).
 
 -define(nif_stub, nif_stub_error(?LINE)).
 
@@ -25,7 +25,7 @@
     load_nif/0,
     normalize_tn/1,
     maybe_add_identity_header/1,
-    get_identity/4
+    get_identity/3
 ]).
 
 %%------------------------------------------------------------------------------
@@ -63,11 +63,8 @@ maybe_add_identity_header(JObj) ->
             %% Get destination number
             DestTN = stepswitch_util:get_outbound_destination(JObj),
 
-            %% Get call ID
-            OrigID = kz_json:get_value(<<"Call-ID">>, JObj, <<>>),
-
             %% Attempt to generate an identity header
-            case get_identity(OrigTN, DestTN, <<"A">>, OrigID) of
+            case get_identity(OrigTN, DestTN, <<"A">>) of
                 {'error', Code} ->
                     Reason = martini_error:get_reason(Code),
                     lager:error("Failed to generate identity header: (~p) ~p", [Code, Reason]),
@@ -98,24 +95,21 @@ maybe_add_identity_header(JObj) ->
 %% @param OrigTN - calling number
 %% @param DestTN - called number
 %% @param AttestVal - attestation level
-%% @param OrigID - unique ID for tracking purposes, if empty string a UUID is generated
-%% @param X5uVal - location of public certificate
-%% @param PrvkeyData - content of private key to be used to generate the signature
 %% @return {ok, Identity} | {error, Reason}
 %% @end
 %%------------------------------------------------------------------------------
 -spec get_identity(
-    kz_term:ne_binary(), kz_term:ne_binary(), kz_term:ne_binary(), kz_term:ne_binary()
+    kz_term:ne_binary(), kz_term:ne_binary(), kz_term:ne_binary()
 ) ->
     {ok, kz_term:ne_binary()} | {error, any()}.
-get_identity(OrigTN, DestTN, AttestVal, OrigID) ->
+get_identity(OrigTN, DestTN, AttestVal) ->
     NormalizedOrigTN = normalize_tn(OrigTN),
     NormalizedDestTN = normalize_tn(DestTN),
-    lager:debug("OrigTN: ~p; DestTN: ~p; AttestVal: ~p; OrigID: ~p", [
-        NormalizedOrigTN, NormalizedDestTN, AttestVal, OrigID
+    lager:debug("OrigTN: ~p; DestTN: ~p; AttestVal: ~p", [
+        NormalizedOrigTN, NormalizedDestTN, AttestVal
     ]),
     get_identity_nif(
-        NormalizedOrigTN, NormalizedDestTN, AttestVal, OrigID, ?PUBLIC_KEY_URL, ?PRIVATE_KEY_PEM
+        NormalizedOrigTN, NormalizedDestTN, AttestVal, ?PUBLIC_KEY_URL, ?PRIVATE_KEY_PEM
     ).
 
 %%==============================================================================
@@ -124,8 +118,12 @@ get_identity(OrigTN, DestTN, AttestVal, OrigID) ->
 
 %%------------------------------------------------------------------------------
 %% @doc Calls the NIF to generate the identity header
-%% @returns 'ok' | {'error', {atom(), string()}}
-%% @end
+%% @param OrigTN - calling number
+%% @param DestTN - called number
+%% @param AttestVal - attestation level
+%% @param X5uVal - location of public certificate
+%% @param PrvkeyData - content of private key to be used to generate the signature
+%% @return {ok, Identity} | {error, Reason}
 %% @end
 %%------------------------------------------------------------------------------
 -spec get_identity_nif(
@@ -133,11 +131,10 @@ get_identity(OrigTN, DestTN, AttestVal, OrigID) ->
     kz_term:ne_binary(),
     kz_term:ne_binary(),
     kz_term:ne_binary(),
-    kz_term:ne_binary(),
     kz_term:ne_binary()
 ) ->
     {ok, kz_term:ne_binary()} | {error, any()}.
-get_identity_nif(_, _, _, _, _, _) -> ?nif_stub.
+get_identity_nif(_, _, _, _, _) -> ?nif_stub.
 
 %%------------------------------------------------------------------------------
 %% @doc Generate a NIF stub error
