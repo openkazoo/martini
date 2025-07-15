@@ -19,7 +19,11 @@ libsecsipid:
 martini: libsecsipid
 	@echo "Building martini"
 	cc $(CFLAGS) -c martini.c -o ../priv/martini.o
-	cc -shared -o ../priv/martini.so ../priv/martini.o ../priv/libsecsipid.a $(LDFLAGS)
+	@if [ "`uname -s`" = "Darwin" ]; then \
+		cc -shared -o ../priv/martini.so ../priv/martini.o ../priv/libsecsipid.a $(LDFLAGS) -framework CoreFoundation -framework Security -undefined dynamic_lookup; \
+	else \
+		cc -shared -o ../priv/martini.so ../priv/martini.o ../priv/libsecsipid.a $(LDFLAGS); \
+	fi
 
 clean:
 	rm -f ../priv/*.a ../priv/*.o ../priv/*.so ../priv/*.h
