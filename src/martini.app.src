@@ -1,15 +1,10 @@
 {application, martini, [
     {applications, [
-        kazoo,
-        kazoo_apps,
-        kazoo_data,
-        kazoo_documents,
-        kazoo_stdlib,
         kernel,
         lager,
         stdlib
     ]},
-    {description, "SITR(red) or SHAKEN?"},
+    {description, "martini - STIR/SHAKEN support"},
     {env, [{is_kazoo_app, true}]},
     {mod, {martini_app, []}},
     {modules, []},
