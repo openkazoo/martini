@@ -28,21 +28,21 @@ static ERL_NIF_TERM atom_malloc_fail;
  * @param env ErlNifEnv pointer for the calling process.
  * @param term ERL_NIF_TERM to identify the NIF library.
  * @param str_ptr pointer to the C string to store the converted binary.
- * @param status pointer to the status of the conversion.
+ * @param result pointer to the result of the conversion.
  */
-static bool validate_and_convert_binary(ErlNifEnv *env, ERL_NIF_TERM term, char **str_ptr, ERL_NIF_TERM *status)
+static bool validate_and_convert_binary(ErlNifEnv *env, ERL_NIF_TERM term, char **str_ptr, ERL_NIF_TERM *result)
 {
     ErlNifBinary bin;
 
     if (!enif_inspect_binary(env, term, &bin)) {
         // badarg will override any other result
-        *status = enif_make_badarg(env);
+        *result = enif_make_badarg(env);
         return false;
     }
 
     *str_ptr = malloc(bin.size + 1);
     if (!*str_ptr) {
-        *status = atom_malloc_fail;
+        *result = atom_malloc_fail;
         return false;
     }
 
@@ -72,18 +72,20 @@ static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TER
     }
 
     // Validate and convert the binaries to C strings
-    if (!validate_and_convert_binary(env, argv[0], &origTN, &result) ||
-        !validate_and_convert_binary(env, argv[1], &destTN, &result) ||
-        !validate_and_convert_binary(env, argv[2], &attestVal, &result) ||
-        !validate_and_convert_binary(env, argv[3], &x5uVal, &result) ||
-        !validate_and_convert_binary(env, argv[4], &prvkeyData, &result)) {
-        // Check if there was an error
-        if (!enif_is_identical(result, atom_ok)) {
-            // If there was an error, return the error atom and the error code
-            result = enif_make_tuple2(env, atom_error, result);
-
-            goto cleanup;
-        }
+    if (!validate_and_convert_binary(env, argv[0], &origTN, &result)) {
+        goto error;
+    }
+    if (!validate_and_convert_binary(env, argv[1], &destTN, &result)) {
+        goto error;
+    }
+    if (!validate_and_convert_binary(env, argv[2], &attestVal, &result)) {
+        goto error;
+    }
+    if (!validate_and_convert_binary(env, argv[3], &x5uVal, &result)) {
+        goto error;
+    }
+    if (!validate_and_convert_binary(env, argv[4], &prvkeyData, &result)) {
+        goto error;
     }
 
     // Call the C function
@@ -92,10 +94,12 @@ static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TER
     // Handle the result
     if (ret < 0) {
         // Some sort of error happened
-        result = enif_make_tuple2(env, atom_error, enif_make_int(env, ret));
+        result = enif_make_int(env, ret);
+        goto error;
     } else if (!outPtr) {
         // SecSIPIDGetIdentity suceeded but outPtr is NULL?
-        result = enif_make_tuple2(env, atom_error, atom_null_output);
+        result = atom_null_output;
+        goto error;
     } else {
         ErlNifBinary identity_bin;
         size_t identity_len = strlen(outPtr);
@@ -103,18 +107,26 @@ static ERL_NIF_TERM get_identity_nif(ErlNifEnv *env, int argc, const ERL_NIF_TER
         // Allocate an Erlang managed binary buffer
         if (!enif_alloc_binary(identity_len, &identity_bin)) {
             // Allocation failed, return malloc_fail error
-            result = enif_make_tuple2(env, atom_error, atom_malloc_fail);
-        } else {
-            // Copy C string data into the Erlang binary buffer
-            memcpy(identity_bin.data, outPtr, identity_len);
-
-            // Create the Erlang binary term (takes ownership of identity_bin memory)
-            ERL_NIF_TERM identity_term = enif_make_binary(env, &identity_bin);
-
-            // Construct success tuple {ok, Binary}
-            result = enif_make_tuple2(env, atom_ok, identity_term);
+            result = atom_malloc_fail;
+            goto error;
         }
+
+        // Copy C string data into the Erlang binary buffer
+        memcpy(identity_bin.data, outPtr, identity_len);
+
+        // Create the Erlang binary term (takes ownership of identity_bin memory)
+        ERL_NIF_TERM identity_term = enif_make_binary(env, &identity_bin);
+
+        // Create a success tuple {ok, Binary}
+        result = enif_make_tuple2(env, atom_ok, identity_term);
     }
+
+    // On success, jump to cleanup to free memory and return the success tuple
+    goto cleanup;
+
+error:
+    // On error, create an error tuple {error, Reason}
+    result = enif_make_tuple2(env, atom_error, result);
 
 cleanup:
     // Free allocated memory only if allocation succeeded
