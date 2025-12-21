@@ -1,4 +1,2 @@
-*.a
-*.o
-*.so
-*.beam
+.DS_Store
+_build

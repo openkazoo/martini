@@ -1,16 +1,17 @@
-ROOT = ../..
-PROJECT = martini
+compile:
+	rebar3 compile
 
-all: compile
+format:
+	rebar3 fmt
 
-COMPILE_MOAR = make-c_src
-CLEAN_MOAR = clean-c_src
+clean:
+	rebar3 clean
 
-make-c_src:
-	@git submodule update --init --recursive
-	@$(MAKE) -C c_src
+test:
+	rebar3 eunit
 
-clean-c_src:
-	@$(MAKE) -C c_src clean
+test-cover:
+	rebar3 cover
 
-include $(ROOT)/make/kz.mk
+ct:
+	rebar3 ct

@@ -1,7 +1,9 @@
 {application, martini, [
     {applications, [
+        crypto,
         kernel,
         lager,
+        public_key,
         stdlib
     ]},
     {description, "martini - STIR/SHAKEN support"},
@@ -9,5 +11,5 @@
     {mod, {martini_app, []}},
     {modules, []},
     {registered, []},
-    {vsn, "4.4.0a1"}
+    {vsn, "2.0.0"}
 ]}.
