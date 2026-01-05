@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NIF_LOAD_INFO (102)
+#define NIF_LOAD_INFO (103)
 
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;

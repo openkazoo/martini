@@ -9,5 +9,5 @@
     {mod, {martini_app, []}},
     {modules, []},
     {registered, []},
-    {vsn, "4.4.0a1"}
+    {vsn, git}
 ]}.

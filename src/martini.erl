@@ -13,7 +13,7 @@
 
 -on_load(load_nif/0).
 
--define(NIF_LOAD_INFO, 102).
+-define(NIF_LOAD_INFO, 103).
 
 -define(nif_stub, nif_stub_error(?LINE)).
 
